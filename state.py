@@ -11,6 +11,12 @@ def stateEvent(jsData):
         conn = sq.connect('main.db')
         cur = conn.cursor()
 
+        try:
+            if token != cur.execute("SELECT token FROM Players WHERE id={};".format(idPlayer)).fetchall()[0][0]:
+                return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
+        except:
+            return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
+
         d = {"type": "StateRequestSuccess"}
         d["gameState"] = {}
         d["gameState"]["playerId"] = id
