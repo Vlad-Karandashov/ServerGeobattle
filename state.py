@@ -36,7 +36,7 @@ def stateEvent(jsData):
                 d["gameState"]["players"][-1]["sectors"][-1]["y"] = sector[2]
                 d["gameState"]["players"][-1]["sectors"][-1]["sectorId"] = sector[0]
                 d["gameState"]["players"][-1]["sectors"][-1]["buildings"] = []
-                buildings = cur.execute("SELECT id, x, y, type FROM Buildings WHERE idSector={};".format(sector[0])).fetchall()
+                buildings = cur.execute("SELECT id, x, y, type, Data FROM Buildings WHERE idSector={};".format(sector[0])).fetchall()
                 for build in buildings:
                     d["gameState"]["players"][-1]["sectors"][-1]["buildings"].append({})
                     d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["type"] = build[3]
@@ -44,8 +44,10 @@ def stateEvent(jsData):
                     d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["y"] = build[2]
                     d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["id"] = build[0]
                     d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["playerId"] = player[0]
-
                     d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["sectorId"] = sector[0]
+                    if build[3]=='Hangar':
+                        d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["units"] = {}
+                        d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["units"]["units"] = []
 
         #return d
         return js.dumps(d).encode("utf-8")
