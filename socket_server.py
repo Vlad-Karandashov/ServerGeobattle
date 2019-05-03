@@ -11,15 +11,29 @@ from time import time
 from math import trunc
 from state import stateEvent
 
+import param_parser
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-ip = 'localhost' #'78.47.182.60'
-newdb()
+params = param_parser.parse_params(sys.argv[1:])
+
+if "-i" in params.keys():
+    ip = params["-i"]
+else:
+    ip = 'localhost' #'78.47.182.60'
+
+if "-p" in params.keys() and params["-p"].isdigit():
+    port = int(params["-p"])
+else:
+    port = 9090
+
+if "-c" in params.keys():
+    newdb()
 
 resourcesTime  = time()
 
-print(ip, "9090")
-sock.bind((ip, 9090))
+print(ip, port)
+sock.bind((ip, port))
 sock.listen(999)
 sock.settimeout(0.5) #таймаут апгрейда
 while True:
