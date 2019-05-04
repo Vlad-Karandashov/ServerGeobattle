@@ -12,7 +12,7 @@ def stateEvent(jsData):
         cur = conn.cursor()
 
         try:
-            if token != cur.execute("SELECT token FROM Players WHERE id={};".format(idPlayer)).fetchall()[0][0]:
+            if token != cur.execute("SELECT token FROM Players WHERE id={};".format(id)).fetchall()[0][0]:
                 return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
         except:
             return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
