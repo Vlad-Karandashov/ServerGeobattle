@@ -82,7 +82,7 @@ def registration(jsData):
         levelG = 1
         levelP = 1
 
-        cur.execute("INSERT INTO Players VALUES ({}, '{}', '{}', '{}', '{}', {}, {}, {}, {}, {}, {}, {})".format(id, name, password, token, email, r, g, b, resources, levelT, levelG, levelP))
+        cur.execute("INSERT INTO Players VALUES ({}, '{}', '{}', '{}', '{}', {}, {}, {}, {}, {}, {}, {});".format(id, name, password, token, email, r, g, b, resources, levelT, levelG, levelP))
         conn.commit()
 
         d = {"type": "Success"}

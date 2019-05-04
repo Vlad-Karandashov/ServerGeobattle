@@ -144,12 +144,21 @@ def destroy(jsData):
 
         idPlayer = jsData['authInfo']['id']
         idB = jsData['id']
+        token = jsData['token']
 
         conn = sq.connect('main.db')
         cur = conn.cursor()
 
-        type = cur.execute("SELECT type FROM Buildings WHERE id={};".format(idB)).fetchall()[0][0]
+        try:
+            if token != cur.execute("SELECT token FROM Players WHERE id={};".format(idPlayer)).fetchall()[0][0]:
+                return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
+        except:
+            return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
 
+        type = cur.execute("SELECT type FROM Buildings WHERE id={};".format(idB)).fetchall()[0][0]
+        data = cur.fetchall("SELECT x, y FROM Buildings WHERE id={};".format(idB)).fetchall()
+        x = data[0][0]
+        y = data[0][1]
         cur.execute("SELECT idSector FROM Buildings WHERE id={};".format(idB))
         idSector = cur.fetchall()[0][0]
         print(idSector, "  - idSector")
@@ -161,7 +170,14 @@ def destroy(jsData):
             d = {"type": "Destroyed"}
             d["info"] = {}
             d["info"]["playerIndex"] = idPlayer
-            d["info"]["building"] = type
+            d["info"]["building"] = {}
+            d["info"]["building"]["type"] = type
+            d["info"]["building"]["x"] = x
+            d["info"]["building"]["y"] = y
+            d["info"]["building"]["id"] = idB
+            d["info"]["building"]["playerId"] = idPlayer
+            d["info"]["building"]["sectorId"] = idSector
+
 
             return js.dumps(d).encode("utf-8")
     except Exception as exc:

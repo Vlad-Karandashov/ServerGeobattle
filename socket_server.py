@@ -10,6 +10,7 @@ import build
 from time import time
 from math import trunc
 from state import stateEvent
+from sectorBuild import sectorBuild
 
 import param_parser
 
@@ -76,6 +77,11 @@ while True:
                 continue
             elif jsData['type'] == 'StateRequestEvent':
                 conn.send(stateEvent(jsData))
+                conn.close()
+                print("Finish")
+                continue
+            elif jsData['type'] == 'SectorBuildEvent':
+                conn.send(sectorBuild(jsData))
                 conn.close()
                 print("Finish")
                 continue
