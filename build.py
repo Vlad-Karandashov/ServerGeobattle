@@ -144,7 +144,7 @@ def destroy(jsData):
 
         idPlayer = jsData['authInfo']['id']
         idB = jsData['id']
-        token = jsData['token']
+        token = jsData['authInfo']['token']
 
         conn = sq.connect('main.db')
         cur = conn.cursor()
