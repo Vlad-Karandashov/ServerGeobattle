@@ -29,7 +29,9 @@ def sectorBuild(jsData):
         sectors = cur.execute("SELECT x, y FROM Sectors;").fetchall()
 
 
-        if resources >= 50:
+        cash = 50 + 25*len(cur.execute("SELECT id FROM Sectors WHERE idPlayer={};".format(idPlayer)).fetchall())
+
+        if resources >= cash:
             if len(mySectors) == 0:
                 canBuild = True
             else:
@@ -45,7 +47,9 @@ def sectorBuild(jsData):
 
                 canBuild = isNeighbour and not exists
 
-            if not canBuild:
+            if canBuild:
+                pass
+            else:
                 return js.dumps({"type": "WrongPosition"}).encode("utf-8")
 
 
@@ -63,7 +67,7 @@ def sectorBuild(jsData):
                 idNewSector = 0
 
             cur.execute("INSERT INTO Sectors VALUES ({}, {}, {}, {}, {});".format(idNewSector, xbs, ybs, idPlayer, 0))
-            cur.execute("UPDATE Players SET resources = {} WHERE id = {};".format(resources-50, idPlayer))
+            cur.execute("UPDATE Players SET resources = {} WHERE id = {};".format(resources-cash, idPlayer))
             conn.commit()
 
             ret = {}
@@ -77,7 +81,9 @@ def sectorBuild(jsData):
             return js.dumps(ret).encode('utf-8')
 
         else:
-            return js.dumps({"type": "NotEnoughResources"}).encode("utf-8")
+            d = {"type": "NotEnoughResources"}
+            d["required"] = cash
+            return js.dumps(d).encode("utf-8")
 
     except Exception as exc:
         print(exc)
