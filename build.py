@@ -134,8 +134,9 @@ def build(jsData):
         ret['required'] = cash
         return js.dumps(ret).encode("utf-8")
     except Exception as exc:
-        print(exc)
-        print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
+        #print(exc)
+        #print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
+        pass
 
     return js.dumps({"type": "NotInTerritory"}).encode("utf-8")
 
@@ -161,7 +162,7 @@ def destroy(jsData):
         y = data[0][1]
         cur.execute("SELECT idSector FROM Buildings WHERE id={};".format(idB))
         idSector = cur.fetchall()[0][0]
-        print(idSector, "  - idSector")
+        #print(idSector, "  - idSector")
         cur.execute("SELECT idPlayer FROM Sectors WHERE id={};".format(idSector))
         idPlayerB = cur.fetchall()[0][0]
         if idPlayer==idPlayerB:
@@ -184,6 +185,8 @@ def destroy(jsData):
         else:
             return js.dumps({"type": "NotOwningBuilding"}).encode("utf-8")
     except Exception as exc:
-        print(exc)
-        print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
+        #print(exc)
+        #print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
+        pass
+
     return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")

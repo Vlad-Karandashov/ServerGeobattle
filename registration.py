@@ -136,9 +136,9 @@ if __name__=="__main__":
 
     newdb()
 
-    print(registration({"name": "vladislav", "email": "vlados400125@gmail.com", "password": "1234567", "color": {"r": 255, "g": 255, "b": 255}}))
+    #print(registration({"name": "vladislav", "email": "vlados400125@gmail.com", "password": "1234567", "color": {"r": 255, "g": 255, "b": 255}}))
 
-    print(authorization({"type": "Authorization", "name": "vladislav", "password": "1234567"}))
+    #print(authorization({"type": "Authorization", "name": "vladislav", "password": "1234567"}))
 
     conn = sq.connect('main.db')
     cur = conn.cursor()

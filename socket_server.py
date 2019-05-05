@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import socket
+import os.path
 import json as js
 import registration as reg
 import sqlite3 as sq
@@ -32,6 +33,12 @@ if "-c" in params.keys():
     newdb()
 
 resourcesTime  = time()
+file_path = "LOG.txt"
+if os.path.exists(file_path):
+    f = open(file_path, 'a')
+else:
+    f = open(file_path, 'w')
+
 
 print(ip, port)
 sock.bind((ip, port))
@@ -42,7 +49,7 @@ while True:
         while True:
             conn, addr = sock.accept()
             conn.settimeout(1)
-            print('connected:', addr)
+            #print('connected:', addr)
 
             data_res = ''
             while True:
@@ -52,50 +59,52 @@ while True:
                 else:
                     data_res += data1.decode('utf-8')[0:-1:1]
                     break
-
+            
+            
+            f.write(str(time()) + ' ' + data_res + '\n')
             jsData = dict(js.loads(data_res))
-            print(jsData)
+            #print(jsData)
             if jsData['type']=='RegistrationEvent':
                 conn.send(reg.registration(jsData))
                 conn.close()
                 continue
-                print("Finish")
+                #print("Finish")
             elif jsData['type']=='BuildEvent':
                 conn.send(build.build(jsData))
                 conn.close()
-                print("Finish")
+                #print("Finish")
                 continue
             elif jsData['type']=='AuthorizationEvent':
                 conn.send(reg.authorization(jsData))
                 conn.close()
-                print("Finish")
+                #print("Finish")
                 continue
             elif jsData['type']=='DestroyEvent':
                 conn.send(build.destroy(jsData))
                 conn.close()
-                print("Finish")
+                #print("Finish")
                 continue
             elif jsData['type'] == 'StateRequestEvent':
                 conn.send(stateEvent(jsData))
                 conn.close()
-                print("Finish")
+                #print("Finish")
                 continue
             elif jsData['type'] == 'SectorBuildEvent':
                 conn.send(sectorBuild(jsData))
                 conn.close()
-                print("Finish")
+                #print("Finish")
                 continue
             #conn.send(data_res)
             conn.close()
-            print("NotThisType!")
-            print()
+            #print("NotThisType!")
+            #print()
     except Exception as exc:
         #Выполнится если произойдёт ошибка в сокете
         #или в течении 300-от секунд никто не подключится
         #РАЗУМЕЕТСЯ 300 СЕКУНД ЭТО ВРЕМЕННО!!!!
         #БУДУ ИСПОЛЬЗОВАТЬ это для ОБНОВЛЕНИЯ ИГРОВОГО СОСТОЯНИЯ каждые 300 секунд ЕСЛИ СЕРВЕР НИЧЕМ НЕ ЗАНЯТ
 
-        print(exc)
+        #print(exc)
         #print(type(exc)=="<'Socket.timeout'>")
         #print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
 
@@ -124,10 +133,10 @@ while True:
                             energy += 30
                         elif i[0]=='Mine':
                             energy -= 5
-                        elif i[0]=='Turret':
-                            energy -= 6
                         elif i[0]=='Hangar':
                             energy -= 10
+                        elif i[0]=='Turret':
+                            energy -= 6
                         else:
                             energy -= 4
                     if energy >= 0:
@@ -135,7 +144,7 @@ while True:
                 b += len(sectors)
                 max = 200 + len(sectors)*50
 
-                print(b)
+                #print(b)
                 line = max - b*trunc(passedTime/8)
                 #print(max, ' ', line)
                 if resPlayer<=line:
