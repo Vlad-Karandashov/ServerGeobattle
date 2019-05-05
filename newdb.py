@@ -4,8 +4,10 @@ import os
 #from registration import registration as reg
 
 def newdb():
-
-    os.remove("main.db")
+    try:
+        os.remove("main.db")
+    except:
+        pass
 
     try:
         conn = sq.connect('main.db')

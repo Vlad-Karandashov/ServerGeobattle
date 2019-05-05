@@ -11,6 +11,12 @@ def stateEvent(jsData):
         conn = sq.connect('main.db')
         cur = conn.cursor()
 
+        try:
+            if token != cur.execute("SELECT token FROM Players WHERE id={};".format(id)).fetchall()[0][0]:
+                return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
+        except:
+            return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
+
         d = {"type": "StateRequestSuccess"}
         d["gameState"] = {}
         d["gameState"]["playerId"] = id
@@ -36,7 +42,7 @@ def stateEvent(jsData):
                 d["gameState"]["players"][-1]["sectors"][-1]["y"] = sector[2]
                 d["gameState"]["players"][-1]["sectors"][-1]["sectorId"] = sector[0]
                 d["gameState"]["players"][-1]["sectors"][-1]["buildings"] = []
-                buildings = cur.execute("SELECT id, x, y, type FROM Buildings WHERE idSector={};".format(sector[0])).fetchall()
+                buildings = cur.execute("SELECT id, x, y, type, Data FROM Buildings WHERE idSector={};".format(sector[0])).fetchall()
                 for build in buildings:
                     d["gameState"]["players"][-1]["sectors"][-1]["buildings"].append({})
                     d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["type"] = build[3]
@@ -44,8 +50,10 @@ def stateEvent(jsData):
                     d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["y"] = build[2]
                     d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["id"] = build[0]
                     d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["playerId"] = player[0]
-
                     d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["sectorId"] = sector[0]
+                    if build[3]=='Hangar':
+                        d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["units"] = {}
+                        d["gameState"]["players"][-1]["sectors"][-1]["buildings"][-1]["units"]["units"] = []
 
         #return d
         return js.dumps(d).encode("utf-8")

@@ -1,6 +1,7 @@
 import sqlite3 as sq
 import json as js
 import sys
+from functions import *
 
 def build(jsData):
 
@@ -14,6 +15,11 @@ def build(jsData):
 
         conn = sq.connect('main.db')
         cur = conn.cursor()
+        try:
+            if token != cur.execute("SELECT token FROM Players WHERE id={};".format(idPlayer)).fetchall()[0][0]:
+                return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
+        except:
+            return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
 
 
         cur.execute("SELECT resources FROM Players WHERE id={};".format(idPlayer))
@@ -55,8 +61,8 @@ def build(jsData):
         for sector in dataSectors:
             xs = sector[1]
             ys = sector[2]
-            if (xb>=xs+1) and (yb>=ys+1) and (xb<=xs+40-sx) and (yb<=ys+40-sy):
-                if ((xb>=xs) and (xb<=xs+18-sx) and (yb>=ys) and (yb<=ys+41-sy)) or ((xb>=xs) and (xb<=xs+41-sx) and (yb>=ys+23) and (yb<=ys+41-sy)) or ((xb>=xs+23) and (xb<=xs+41-sx) and (yb>=ys) and (yb<=ys+41-sy)) or ((xb>=xs) and (xb<=xs+41-sx) and (yb>=ys) and (yb<=ys+18-sy)):
+            if rectangle_contains(xs, ys, 41, 41, xb - 1, yb - 1, sx + 2, sy + 2):
+                if not rectangles_intersect(xs + 19, ys + 19, 3, 3, xb - 1, yb - 1, sx + 2, sy + 2):
                     idSector = sector[0]
                     isBlocked = sector[3]
                     break
@@ -88,7 +94,7 @@ def build(jsData):
                 dsx = 2
                 dsy = 2
 
-            if ((xb>=xs) and (xb<=xs+41) and (yb>=dy+dsy+1) and (yb<=ys+41)) or ((xb>=dx+dsx+1) and (xb<=xs+41) and (yb>=ys) and (yb<=ys+41)) or ((xb>=xs) and (xb<=xs+41) and (yb>=ys) and (yb<=dy-1)) or ((xb>=xs) and (xb<=dx-1) and (yb>=ys) and (yb<=ys+41)):
+            if not rectangles_intersect(dx, dy, dsx, dsy, xb - 1, yb - 1, sx + 2, sy + 2):
                 continue
             else:
                 return js.dumps({"type": "NotInTerritory"}).encode("utf-8")
@@ -105,7 +111,7 @@ def build(jsData):
                     idNewBuild = idBuildings[-1][0]+1
                 else:
                     idNewBuild = 0
-                cur.execute("INSERT INTO Buildings VALUES ({}, {}, {}, '{}', {}, '{}');".format(idNewBuild, xb, yb, buildType, idSector))
+                cur.execute("INSERT INTO Buildings VALUES ({}, {}, {}, '{}', {}, '');".format(idNewBuild, xb, yb, buildType, idSector))
                 cur.execute("UPDATE Players SET resources = {} WHERE id = {};".format(resources-cash, idPlayer))
                 conn.commit()
                 ret = {"type": "Built"}
@@ -138,12 +144,21 @@ def destroy(jsData):
 
         idPlayer = jsData['authInfo']['id']
         idB = jsData['id']
+        token = jsData['authInfo']['token']
 
         conn = sq.connect('main.db')
         cur = conn.cursor()
 
-        type = cur.execute("SELECT type FROM Buildings WHERE id={};".format(idB)).fetchall()[0][0]
+        try:
+            if token != cur.execute("SELECT token FROM Players WHERE id={};".format(idPlayer)).fetchall()[0][0]:
+                return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
+        except:
+            return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
 
+        type = cur.execute("SELECT type FROM Buildings WHERE id={};".format(idB)).fetchall()[0][0]
+        data = cur.execute("SELECT x, y FROM Buildings WHERE id={};".format(idB)).fetchall()
+        x = data[0][0]
+        y = data[0][1]
         cur.execute("SELECT idSector FROM Buildings WHERE id={};".format(idB))
         idSector = cur.fetchall()[0][0]
         print(idSector, "  - idSector")
@@ -155,9 +170,19 @@ def destroy(jsData):
             d = {"type": "Destroyed"}
             d["info"] = {}
             d["info"]["playerIndex"] = idPlayer
-            d["info"]["building"] = type
-
+            d["info"]["building"] = {}
+            d["info"]["building"]["type"] = type
+            d["info"]["building"]["x"] = x
+            d["info"]["building"]["y"] = y
+            d["info"]["building"]["id"] = idB
+            d["info"]["building"]["playerId"] = idPlayer
+            d["info"]["building"]["sectorId"] = idSector
+            if type == 'Hangar':
+                d["info"]["building"]["units"] = {}
+                d["info"]["building"]["units"]["units"] = [] #TODO add units
             return js.dumps(d).encode("utf-8")
+        else:
+            return js.dumps({"type": "NotOwningBuilding"}).encode("utf-8")
     except Exception as exc:
         print(exc)
         print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))

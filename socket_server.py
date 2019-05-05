@@ -10,16 +10,31 @@ import build
 from time import time
 from math import trunc
 from state import stateEvent
+from sectorBuild import sectorBuild
+
+import param_parser
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-ip = 'localhost' #'78.47.182.60'
-newdb()
+params = param_parser.parse_params(sys.argv[1:])
+
+if "-i" in params.keys():
+    ip = params["-i"]
+else:
+    ip = 'localhost' #'78.47.182.60'
+
+if "-p" in params.keys() and params["-p"].isdigit():
+    port = int(params["-p"])
+else:
+    port = 9090
+
+if "-c" in params.keys():
+    newdb()
 
 resourcesTime  = time()
 
-print(ip, "9090")
-sock.bind((ip, 9090))
+print(ip, port)
+sock.bind((ip, port))
 sock.listen(999)
 sock.settimeout(0.5) #таймаут апгрейда
 while True:
@@ -65,6 +80,11 @@ while True:
                 conn.close()
                 print("Finish")
                 continue
+            elif jsData['type'] == 'SectorBuildEvent':
+                conn.send(sectorBuild(jsData))
+                conn.close()
+                print("Finish")
+                continue
             #conn.send(data_res)
             conn.close()
             print("NotThisType!")
@@ -96,7 +116,22 @@ while True:
                 b = 0
                 for sec in sectors:
                     sectorId = sec[0]
-                    b += len(cur.execute("SELECT id FROM Buildings WHERE idSector={} AND type='Mine';".format(sectorId)).fetchall())
+
+                    energy = 10
+                    data = cur.execute("SELECT type FROM Buildings WHERE idSector={};".format(sectorId)).fetchall()
+                    for i in data:
+                        if i[0]=='Generator':
+                            energy += 30
+                        elif i[0]=='Mine':
+                            energy -= 5
+                        elif i[0]=='Turret':
+                            energy -= 6
+                        elif i[0]=='Hangar':
+                            energy -= 10
+                        else:
+                            energy -= 4
+                    if energy >= 0:
+                        b += len(cur.execute("SELECT id FROM Buildings WHERE idSector={} AND type='Mine';".format(sectorId)).fetchall())
                 b += len(sectors)
                 max = 200 + len(sectors)*50
 
