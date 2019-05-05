@@ -156,7 +156,7 @@ def destroy(jsData):
             return js.dumps({"type": "WrongAuthInfo"}).encode("utf-8")
 
         type = cur.execute("SELECT type FROM Buildings WHERE id={};".format(idB)).fetchall()[0][0]
-        data = cur.fetchall("SELECT x, y FROM Buildings WHERE id={};".format(idB)).fetchall()
+        data = cur.execute("SELECT x, y FROM Buildings WHERE id={};".format(idB)).fetchall()
         x = data[0][0]
         y = data[0][1]
         cur.execute("SELECT idSector FROM Buildings WHERE id={};".format(idB))
@@ -177,9 +177,12 @@ def destroy(jsData):
             d["info"]["building"]["id"] = idB
             d["info"]["building"]["playerId"] = idPlayer
             d["info"]["building"]["sectorId"] = idSector
-
-
+            if type == 'Hangar':
+                d["info"]["building"]["units"] = {}
+                d["info"]["building"]["units"]["units"] = [] #TODO add units
             return js.dumps(d).encode("utf-8")
+        else:
+            return js.dumps({"type": "NotOwningBuilding"}).encode("utf-8")
     except Exception as exc:
         print(exc)
         print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))

@@ -116,7 +116,22 @@ while True:
                 b = 0
                 for sec in sectors:
                     sectorId = sec[0]
-                    b += len(cur.execute("SELECT id FROM Buildings WHERE idSector={} AND type='Mine';".format(sectorId)).fetchall())
+
+                    energy = 10
+                    data = cur.execute("SELECT type FROM Buildings WHERE idSector={};".format(sectorId)).fetchall()
+                    for i in data:
+                        if i[0]=='Generator':
+                            energy += 30
+                        elif i[0]=='Mine':
+                            energy -= 5
+                        elif i[0]=='Turret':
+                            energy -= 6
+                        elif i[0]=='Hangar':
+                            energy -= 10
+                        else:
+                            energy -= 4
+                    if energy >= 0:
+                        b += len(cur.execute("SELECT id FROM Buildings WHERE idSector={} AND type='Mine';".format(sectorId)).fetchall())
                 b += len(sectors)
                 max = 200 + len(sectors)*50
 
